@@ -22,7 +22,10 @@ func TestParse(t *testing.T) {
 	os.Setenv("DB_NUM", strconv.FormatInt(int64(dbNumVal), 10))
 
 	var c config
-	Parse(&c)
+	if err := Parse(&c); err != nil {
+		t.Errorf("error while parsing: %v", err)
+		return
+	}
 
 	if !c.Debug {
 		t.Errorf("failed parsing bool; expected %v, got %v", debugVal, c.Debug)
@@ -51,7 +54,10 @@ func TestParseWithDefaults(t *testing.T) {
 	os.Unsetenv("DB_NUM")
 
 	var c config
-	Parse(&c)
+	if err := Parse(&c); err != nil {
+		t.Errorf("error while parsing: %v", err)
+		return
+	}
 
 	if c.Debug != debugVal {
 		t.Errorf("failed parsing bool; expected %v, got %v", debugVal, c.Debug)
