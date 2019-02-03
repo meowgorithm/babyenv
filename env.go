@@ -38,6 +38,7 @@ func Parse(cfg interface{}) error {
 	return parseFields(ref)
 }
 
+// Interate over the fields of a struct, looking for `env` tags.
 func parseFields(ref reflect.Value) error {
 	for i := 0; i < ref.NumField(); i++ {
 		var (
@@ -56,10 +57,13 @@ func parseFields(ref reflect.Value) error {
 			return fmt.Errorf("can't set field %v", fieldName)
 		}
 
-		envVal := os.Getenv(envVarName)
+		envVarVal := os.Getenv(envVarName)
 		defaultVal := fieldTags.Get("envdefault")
-		shouldSetDefault := len(envVal) == 0 && len(defaultVal) > 0 && defaultVal != "-"
 
+		// Is the situation such that we should set a default value? We only
+		// do it if the value of the given environment varaiable is empty, and
+		// we have a non-empty default value.
+		shouldSetDefault := len(envVarVal) == 0 && len(defaultVal) > 0 && defaultVal != "-"
 		switch fieldKind {
 
 		case reflect.String:
@@ -67,7 +71,7 @@ func parseFields(ref reflect.Value) error {
 				field.SetString(defaultVal)
 				continue
 			}
-			field.SetString(envVal)
+			field.SetString(envVarVal)
 
 		case reflect.Bool:
 			if shouldSetDefault {
@@ -76,7 +80,7 @@ func parseFields(ref reflect.Value) error {
 				}
 				continue
 			}
-			if err := setBool(field, envVal); err != nil {
+			if err := setBool(field, envVarVal); err != nil {
 				return err
 			}
 
@@ -87,7 +91,7 @@ func parseFields(ref reflect.Value) error {
 				}
 				continue
 			}
-			if err := setInt(field, envVal); err != nil {
+			if err := setInt(field, envVarVal); err != nil {
 				return err
 			}
 
