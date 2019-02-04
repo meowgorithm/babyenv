@@ -1,1 +1,1 @@
-module github.com/magicnumbers/babyenv
+module babyenv
