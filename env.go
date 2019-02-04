@@ -16,7 +16,7 @@ var (
 )
 
 // Parse parses a struct for environment variables. We look at the 'env' tag
-// for the environment variable names, and the 'envdefault' for the default
+// for the environment variable names, and the 'default' for the default
 // value to the corresponding environment variable.
 func Parse(cfg interface{}) error {
 
