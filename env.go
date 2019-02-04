@@ -1,3 +1,48 @@
+// Package babyenv collects environment variables and places them in
+// corresponding struct fields. It aims to reduce the boilerplate in reading
+// data from the environment.
+//
+// The struct should contain `env` tags indicating the names of corresponding
+// environment variables. The values of those environment variables will be
+// then collected and placed into the struct. If nothing is found, struct
+// fields will be given their default values (for example, `bool`s will be
+// `false`).
+//
+// Default values can also be provided in the `default` tag.
+//
+// Example:
+//
+// ```go
+// package main
+//
+// import (
+//     "fmt"
+//     "os"
+//     "github.com/magicnumbers/babyenv"
+// )
+//
+// type config struct {
+//     Debug bool  `env:"DEBUG"`
+//     Port string `env:"PORT" default:"8000"`
+//     Workers int `env:"WORKERS" default:"16"`
+// }
+//
+// func main() {
+//     os.Setenv("DEBUG", "true")
+//     os.Setenv("WORKERS", "4")
+//
+//     var cfg config
+//     if err := babyenv.Parse(&cfg); err != nil {
+//         log.Fatalf("could not get environment vars: %v", err)
+//     }
+//
+//     fmt.Printf("%b\n%s\n%d", cfg.Debug, cfg.Port, cfg.Workers)
+//
+//     // Output:
+//     // true
+//     // 8000
+//     // 4
+// }
 package babyenv
 
 import (
@@ -15,9 +60,10 @@ var (
 	ErrorNotAStructPointer = errors.New("expected a pointer to a struct")
 )
 
-// Parse parses a struct for environment variables. We look at the 'env' tag
-// for the environment variable names, and the 'default' for the default
-// value to the corresponding environment variable.
+// Parse parses a struct for environment variables, placing found values in the
+// struct, altering it. We look at the 'env' tag for the environment variable
+// names, and the 'default' for the default value to the corresponding
+// environment variable.
 func Parse(cfg interface{}) error {
 
 	// Make sure we've got a pointer

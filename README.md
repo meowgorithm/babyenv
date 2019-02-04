@@ -3,13 +3,14 @@ Babyenv
 
 [![GoDoc Badge](https://godoc.org/github.com/magicnumbers/babylogger?status.svg)](http://godoc.org/github.com/magicnumbers/babyenv)
 
-Go environment var parsing, for babies.
+Package babyenv collects environment variables and places them in corresponding
+struct fields. It aims to reduce the boilerplate in reading data from the
+environment.
 
-This package makes it a little easier to collect values from the environment.
-Pass in a struct with an `env` tag indicating the names of corresponding
-environment variables and the values of the environment variables will be
-collected and placed into the struct. If nothing is found, struct fields will be
-given their default values (for example, `bool`s will be `false`).
+The struct should contain `env` tags indicating the names of corresponding
+environment variables. The values of those environment variables will be then
+collected and placed into the struct. If nothing is found, struct fields will
+be given their default values (for example, `bool`s will be `false`).
 
 Default values can also be provided in the `default` tag.
 
