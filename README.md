@@ -66,13 +66,13 @@ Pull requests are welcome, especially for new types.
 
 ## Credit
 
-This is entirely based on the [caarlos0][carlos]’s [env][carlosenv] package,
-however it has a slightly different interface, and less functionality.
+This is entirely based on the [caarlos0][carlos]’s [env][carlosenv] package.
+This one simply has a slightly different interface, and less functionality.
 
 [carlos]: https://github.com/caarlos0
 [carlosenv]: https://github.com/caarlos0/env
 
 
-# LICENSE
+## LICENSE
 
 MIT
