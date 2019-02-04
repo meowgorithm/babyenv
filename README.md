@@ -27,9 +27,9 @@ import (
 )
 
 type config struct {
-    Debug bool  `env:"DEBUG"`
-    Port string `env:"PORT" default:"8000"`
-    Workers int `env:"WORKERS" default:"16"`
+    Debug   bool   `env:"DEBUG"`
+    Port    string `env:"PORT" default:"8000"`
+    Workers int    `env:"WORKERS" default:"16"`
 }
 
 func main() {
