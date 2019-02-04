@@ -13,9 +13,6 @@ var (
 	// struct but we didn't get it. This is returned when parsing a passed
 	// struct.
 	ErrorNotAStructPointer = errors.New("expected a pointer to a struct")
-
-	// ErrorUnsupportedType indicates that a struct type isn't supported
-	ErrorUnsupportedType = errors.New("unsupported type")
 )
 
 // Parse parses a struct for environment variables. We look at the 'env' tag
@@ -64,6 +61,8 @@ func parseFields(ref reflect.Value) error {
 		// do it if the value of the given environment varaiable is empty, and
 		// we have a non-empty default value.
 		shouldSetDefault := len(envVarVal) == 0 && len(defaultVal) > 0 && defaultVal != "-"
+
+		// Set the field accoring to it's kind
 		switch fieldKind {
 
 		case reflect.String:
@@ -95,8 +94,45 @@ func parseFields(ref reflect.Value) error {
 				return err
 			}
 
+		// Pointers are a whole other can of worms
+		case reflect.Ptr:
+			switch field.Type().Elem().Kind() {
+
+			case reflect.String:
+				if shouldSetDefault {
+					field.Set(reflect.ValueOf(&defaultVal))
+					continue
+				}
+				field.Set(reflect.ValueOf(&envVarVal))
+
+			case reflect.Bool:
+				if shouldSetDefault {
+					if err := setBoolPointer(field, defaultVal); err != nil {
+						return err
+					}
+					continue
+				}
+				if err := setBoolPointer(field, envVarVal); err != nil {
+					return err
+				}
+
+			case reflect.Int:
+				if shouldSetDefault {
+					if err := setIntPointer(field, defaultVal); err != nil {
+						return err
+					}
+					continue
+				}
+				if err := setIntPointer(field, envVarVal); err != nil {
+					return err
+				}
+
+			default:
+				return fmt.Errorf("unsupported type %v", field.Type())
+			}
+
 		default:
-			return ErrorUnsupportedType
+			return fmt.Errorf("unsupported type %v", field.Type())
 		}
 
 	}
@@ -106,6 +142,7 @@ func parseFields(ref reflect.Value) error {
 
 func setBool(v reflect.Value, s string) error {
 	if s == "" {
+		// Default to false
 		v.SetBool(false)
 		return nil
 	}
@@ -120,6 +157,7 @@ func setBool(v reflect.Value, s string) error {
 
 func setInt(v reflect.Value, s string) error {
 	if s == "" {
+		// Default to 0
 		v.SetInt(0)
 		return nil
 	}
@@ -129,5 +167,40 @@ func setInt(v reflect.Value, s string) error {
 		return err
 	}
 	v.SetInt(n)
+	return nil
+}
+
+func setBoolPointer(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to false
+		b := false
+		v.Set(reflect.ValueOf(&b))
+		return nil
+	}
+
+	b, err := strconv.ParseBool(s)
+	if err != nil {
+		return err
+	}
+
+	v.Set(reflect.ValueOf(&b))
+	return nil
+}
+
+func setIntPointer(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		n := 0
+		v.Set(reflect.ValueOf(&n))
+		return nil
+	}
+
+	i64, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		return err
+	}
+	i := int(i64)
+
+	v.Set(reflect.ValueOf(&i))
 	return nil
 }

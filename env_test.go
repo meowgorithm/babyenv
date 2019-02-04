@@ -69,3 +69,42 @@ func TestParseWithDefaults(t *testing.T) {
 		t.Errorf("failed parsing int; expected %v, got %v", dbNumVal, c.DBNum)
 	}
 }
+
+func TestParsePointers(t *testing.T) {
+	type config struct {
+		A *string `env:"A"`
+		B *bool   `env:"B"`
+		C *int    `env:"C"`
+	}
+
+	a := "xxx"
+	b := true
+	c := 1
+	os.Setenv("A", a)
+	os.Setenv("B", strconv.FormatBool(b))
+	os.Setenv("C", strconv.FormatInt(int64(c), 10))
+
+	var cfg config
+	if err := Parse(&cfg); err != nil {
+		t.Errorf("error while parsing: %v", err)
+		return
+	}
+
+	if cfg.A == nil {
+		t.Errorf("failed parsing *string; expected %v, got nil", a)
+	} else if *cfg.A != a {
+		t.Errorf("failed parsing *string; expected %v, got %v", a, *cfg.A)
+	}
+
+	if cfg.B == nil {
+		t.Errorf("failed parsing *bool; expected %v, got nil", b)
+	} else if *cfg.B != b {
+		t.Errorf("failed parsing *bool; expected %v, got %v", b, *cfg.B)
+	}
+
+	if cfg.C == nil {
+		t.Errorf("failed parsing *int; expected %v, got nil", c)
+	} else if *cfg.C != c {
+		t.Errorf("failed parsing *int; expected %v, got %v", c, *cfg.C)
+	}
+}
