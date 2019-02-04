@@ -91,14 +91,17 @@ func TestParsePointers(t *testing.T) {
 		A *bool   `env:"A"`
 		B *string `env:"B"`
 		C *int    `env:"C"`
+		D *[]byte `env:"D"`
 	}
 
 	a := true
 	b := "xxx"
 	c := 16
+	d := []byte("yyy")
 	os.Setenv("A", strconv.FormatBool(a))
 	os.Setenv("B", b)
 	os.Setenv("C", strconv.FormatInt(int64(c), 10))
+	os.Setenv("D", string(d))
 
 	var cfg config
 	if err := Parse(&cfg); err != nil {
@@ -122,5 +125,11 @@ func TestParsePointers(t *testing.T) {
 		t.Errorf("failed parsing *int; expected %#v, got nil", c)
 	} else if *cfg.C != c {
 		t.Errorf("failed parsing *int; expected %#v, got %#v", c, *cfg.C)
+	}
+
+	if cfg.D == nil {
+		t.Errorf("failed parsing *[]byte; expected %#v, got nil", d)
+	} else if string(*cfg.D) != string(d) {
+		t.Errorf("failed parsing *[]byte; expected %#v, got %#v", d, *cfg.D)
 	}
 }

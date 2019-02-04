@@ -10,6 +10,10 @@
 //
 // Default values can also be provided in the `default` tag.
 //
+// Only a few types are supported: string, bool, int, []byte, *string, *bool,
+// *int, *[]byte. An error will be returned if other types are attempted to
+// be processed.
+//
 // Example:
 //
 //     package main
@@ -162,7 +166,9 @@ func parseFields(ref reflect.Value) error {
 
 		// Pointers are also a whole other can of worms
 		case reflect.Ptr:
-			switch field.Type().Elem().Kind() {
+			ptr := field.Type().Elem()
+
+			switch ptr.Kind() {
 
 			case reflect.String:
 				if shouldSetDefault {
@@ -191,6 +197,27 @@ func parseFields(ref reflect.Value) error {
 				}
 				if err := setIntPointer(field, envVarVal); err != nil {
 					return err
+				}
+
+			// A poiner to a slice!! Whole other level
+			case reflect.Slice:
+
+				switch ptr.Elem().Kind() {
+
+				// Again, a uint8 seems to work as a byte array
+				case reflect.Uint8:
+					var byteSlice []byte
+					if shouldSetDefault {
+						byteSlice = []byte(defaultVal)
+					} else {
+						byteSlice = []byte(envVarVal)
+					}
+					field.Set(reflect.ValueOf(&byteSlice))
+
+				default:
+					fmt.Println("wowow")
+					return fmt.Errorf("unsupported type %v", field.Type())
+
 				}
 
 			default:
