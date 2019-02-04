@@ -8,7 +8,7 @@ Go environment var parsing, for babies.
 This package makes it a little easier to collect values from the environment.
 Pass in a struct with an `env` tag indicating the names of corresponding
 environment variables and the values of the environment variables will be
-collected and placed into the struct. If nothing is found struct fields will be
+collected and placed into the struct. If nothing is found, struct fields will be
 given their default values (for example, `bool`s will be `false`).
 
 Default values can also be provided in the `default` tag.
@@ -16,8 +16,7 @@ Default values can also be provided in the `default` tag.
 
 ## Example
 
-go```
-
+```go
 package main
 
 import (
@@ -48,7 +47,6 @@ func main() {
     // 8000
     // 4
 }
-
 ```
 
 
