@@ -12,37 +12,36 @@
 //
 // Example:
 //
-// ```go
-// package main
+//     package main
 //
-// import (
-//     "fmt"
-//     "os"
-//     "github.com/magicnumbers/babyenv"
-// )
+//     import (
+//         "fmt"
+//         "os"
+//         "github.com/magicnumbers/babyenv"
+//     )
 //
-// type config struct {
-//     Debug bool  `env:"DEBUG"`
-//     Port string `env:"PORT" default:"8000"`
-//     Workers int `env:"WORKERS" default:"16"`
-// }
-//
-// func main() {
-//     os.Setenv("DEBUG", "true")
-//     os.Setenv("WORKERS", "4")
-//
-//     var cfg config
-//     if err := babyenv.Parse(&cfg); err != nil {
-//         log.Fatalf("could not get environment vars: %v", err)
+//     type config struct {
+//         Debug bool  `env:"DEBUG"`
+//         Port string `env:"PORT" default:"8000"`
+//         Workers int `env:"WORKERS" default:"16"`
 //     }
 //
-//     fmt.Printf("%b\n%s\n%d", cfg.Debug, cfg.Port, cfg.Workers)
+//     func main() {
+//         os.Setenv("DEBUG", "true")
+//         os.Setenv("WORKERS", "4")
 //
-//     // Output:
-//     // true
-//     // 8000
-//     // 4
-// }
+//         var cfg config
+//         if err := babyenv.Parse(&cfg); err != nil {
+//             log.Fatalf("could not get environment vars: %v", err)
+//         }
+//
+//         fmt.Printf("%b\n%s\n%d", cfg.Debug, cfg.Port, cfg.Workers)
+//
+//         // Output:
+//         // true
+//         // 8000
+//         // 4
+//     }
 package babyenv
 
 import (
