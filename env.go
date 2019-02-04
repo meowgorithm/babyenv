@@ -35,7 +35,11 @@ func Parse(cfg interface{}) error {
 	return parseFields(ref)
 }
 
-// Interate over the fields of a struct, looking for `env` tags.
+// Interate over the fields of a struct, looking for `env` tags indicating
+// environment variable names and `default` inicating default values. We're
+// expecting a pointer to a struct here, and either environment variables or
+// defaults will be placed in the struct. If a non-struct pointer is passed we
+// return an error.
 func parseFields(ref reflect.Value) error {
 	for i := 0; i < ref.NumField(); i++ {
 		var (
@@ -55,7 +59,7 @@ func parseFields(ref reflect.Value) error {
 		}
 
 		envVarVal := os.Getenv(envVarName)
-		defaultVal := fieldTags.Get("envdefault")
+		defaultVal := fieldTags.Get("default")
 
 		// Is the situation such that we should set a default value? We only
 		// do it if the value of the given environment varaiable is empty, and

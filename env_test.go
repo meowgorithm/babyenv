@@ -8,8 +8,8 @@ import (
 
 func TestParse(t *testing.T) {
 	type config struct {
-		Debug  bool   `env:"DEBUG" envdefault:"false"`
-		DBAddr string `env:"DB_ADDR" envdefault:"localhost:6379"`
+		Debug  bool   `env:"DEBUG" default:"false"`
+		DBAddr string `env:"DB_ADDR" default:"localhost:6379"`
 		DBNum  int    `env:"DB_NUM"`
 	}
 
@@ -28,21 +28,21 @@ func TestParse(t *testing.T) {
 	}
 
 	if !c.Debug {
-		t.Errorf("failed parsing bool; expected %v, got %v", debugVal, c.Debug)
+		t.Errorf("failed parsing bool; expected %#v, got %#v", debugVal, c.Debug)
 	}
 	if c.DBAddr != dbAddrVal {
-		t.Errorf("failed parsing string; expected %v, got %v", dbAddrVal, c.DBAddr)
+		t.Errorf("failed parsing string; expected %#v, got %#v", dbAddrVal, c.DBAddr)
 	}
 	if c.DBNum != dbNumVal {
-		t.Errorf("failed parsing int; expected %v, got %v", dbNumVal, c.DBNum)
+		t.Errorf("failed parsing int; expected %#v, got %#v", dbNumVal, c.DBNum)
 	}
 }
 
 func TestParseWithDefaults(t *testing.T) {
 	type config struct {
-		Debug  bool   `env:"DEBUG" envdefault:"true"`
-		DBAddr string `env:"DB_ADDR" envdefault:"localhost:6379"`
-		DBNum  int    `env:"DB_NUM" envdefault:"16"`
+		Debug  bool   `env:"DEBUG" default:"true"`
+		DBAddr string `env:"DB_ADDR" default:"localhost:6379"`
+		DBNum  int    `env:"DB_NUM" default:"16"`
 	}
 
 	debugVal := true
@@ -60,13 +60,13 @@ func TestParseWithDefaults(t *testing.T) {
 	}
 
 	if c.Debug != debugVal {
-		t.Errorf("failed parsing bool; expected %v, got %v", debugVal, c.Debug)
+		t.Errorf("failed parsing bool; expected %#v, got %#v", debugVal, c.Debug)
 	}
 	if c.DBAddr != dbAddrVal {
-		t.Errorf("failed parsing string; expected %v, got %v", dbAddrVal, c.DBAddr)
+		t.Errorf("failed parsing string; expected %#v, got %#v", dbAddrVal, c.DBAddr)
 	}
 	if c.DBNum != dbNumVal {
-		t.Errorf("failed parsing int; expected %v, got %v", dbNumVal, c.DBNum)
+		t.Errorf("failed parsing int; expected %#v, got %#v", dbNumVal, c.DBNum)
 	}
 }
 
@@ -91,20 +91,20 @@ func TestParsePointers(t *testing.T) {
 	}
 
 	if cfg.A == nil {
-		t.Errorf("failed parsing *string; expected %v, got nil", a)
+		t.Errorf("failed parsing *string; expected %#v, got nil", a)
 	} else if *cfg.A != a {
-		t.Errorf("failed parsing *string; expected %v, got %v", a, *cfg.A)
+		t.Errorf("failed parsing *string; expected %#v, got %#v", a, *cfg.A)
 	}
 
 	if cfg.B == nil {
-		t.Errorf("failed parsing *bool; expected %v, got nil", b)
+		t.Errorf("failed parsing *bool; expected %#v, got nil", b)
 	} else if *cfg.B != b {
-		t.Errorf("failed parsing *bool; expected %v, got %v", b, *cfg.B)
+		t.Errorf("failed parsing *bool; expected %#v, got %#v", b, *cfg.B)
 	}
 
 	if cfg.C == nil {
-		t.Errorf("failed parsing *int; expected %v, got nil", c)
+		t.Errorf("failed parsing *int; expected %#v, got nil", c)
 	} else if *cfg.C != c {
-		t.Errorf("failed parsing *int; expected %v, got %v", c, *cfg.C)
+		t.Errorf("failed parsing *int; expected %#v, got %#v", c, *cfg.C)
 	}
 }
