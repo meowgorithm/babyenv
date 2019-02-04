@@ -56,10 +56,10 @@ func main() {
 Currently, only the following types are supported:
 
 * string
-* *string
 * bool
-* *bool
 * int
+* *string
+* *bool
 * *int
 
 Pull requests are welcome, especially for new types.
