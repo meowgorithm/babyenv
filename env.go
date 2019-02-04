@@ -143,7 +143,24 @@ func parseFields(ref reflect.Value) error {
 				return err
 			}
 
-		// Pointers are a whole other can of worms
+		// Slices are a whole can of worms
+		case reflect.Slice:
+			switch field.Type().Elem().Kind() {
+
+			// A reflect.Uint8 doubles as a byte array, apparently
+			case reflect.Uint8:
+				if shouldSetDefault {
+					field.SetBytes([]byte(defaultVal))
+					continue
+				}
+				field.SetBytes([]byte(envVarVal))
+
+			default:
+				return fmt.Errorf("unsupported type %v", field.Type())
+
+			}
+
+		// Pointers are also a whole other can of worms
 		case reflect.Ptr:
 			switch field.Type().Elem().Kind() {
 
