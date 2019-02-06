@@ -12,7 +12,29 @@ environment variables. The values of those environment variables will be then
 collected and placed into the struct. If nothing is found, struct fields will
 be given their default values (for example, `bool`s will be `false`).
 
+```go
+type config struct {
+    Name string `env:"NAME"`
+}
+```
+
 Default values can also be provided in the `default` tag.
+
+```go
+    type config struct {
+        Name string `env:"NAME" default:"Jane"`
+    }
+```
+
+A 'required' flag can also be set in the following format:
+
+```go
+    type config struct {
+        Name string `env:"NAME,required"`
+    }
+```
+
+If a required flag is set the 'default' tag will be ignored.
 
 
 ## Example
@@ -30,23 +52,26 @@ type config struct {
     Debug   bool   `env:"DEBUG"`
     Port    string `env:"PORT" default:"8000"`
     Workers int    `env:"WORKERS" default:"16"`
+    Name    string `env:"NAME,required"`
 }
 
 func main() {
     os.Setenv("DEBUG", "true")
     os.Setenv("WORKERS", "4")
+    os.Setenv("NAME", "Jane")
 
     var cfg config
     if err := babyenv.Parse(&cfg); err != nil {
         log.Fatalf("could not get environment vars: %v", err)
     }
 
-    fmt.Printf("%b\n%s\n%d", cfg.Debug, cfg.Port, cfg.Workers)
+    fmt.Printf("%b\n%s\n%d\n%s", cfg.Debug, cfg.Port, cfg.Workers, cfg.Name)
 
     // Output:
     // true
     // 8000
     // 4
+    // Jane
 }
 ```
 

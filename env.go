@@ -8,7 +8,19 @@
 // fields will be given their default values (for example, `bool`s will be
 // `false`).
 //
+//     type config struct {
+//         Name string `env:"NAME"`
+//     }
+//
 // Default values can also be provided in the `default` tag.
+//
+//     `env:"NAME" default:"Jane"`
+//
+// A 'required' flag can also be set in the following format:
+//
+//     `env:"NAME,required"`
+//
+// If a required flag is set the 'default' tag will be ignored.
 //
 // Only a few types are supported: string, bool, int, []byte, *string, *bool,
 // *int, *[]byte. An error will be returned if other types are attempted to
@@ -28,23 +40,26 @@
 //         Debug   bool   `env:"DEBUG"`
 //         Port    string `env:"PORT" default:"8000"`
 //         Workers int    `env:"WORKERS" default:"16"`
+//         Name    string `env:"NAME,required"`
 //     }
 //
 //     func main() {
 //         os.Setenv("DEBUG", "true")
 //         os.Setenv("WORKERS", "4")
+//         os.Setenv("NAME", "Jane")
 //
 //         var cfg config
 //         if err := babyenv.Parse(&cfg); err != nil {
 //             log.Fatalf("could not get environment vars: %v", err)
 //         }
 //
-//         fmt.Printf("%b\n%s\n%d", cfg.Debug, cfg.Port, cfg.Workers)
+//         fmt.Printf("%b\n%s\n%d\n%s", cfg.Debug, cfg.Port, cfg.Workers, cfg.Name)
 //
 //         // Output:
 //         // true
 //         // 8000
 //         // 4
+//         // Jane
 //     }
 package babyenv
 
@@ -54,6 +69,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -89,25 +105,57 @@ func Parse(cfg interface{}) error {
 // expecting a pointer to a struct here, and either environment variables or
 // defaults will be placed in the struct. If a non-struct pointer is passed we
 // return an error.
+//
+// Note that a required flag can also be passed in the form of:
+//
+//     VarName string `env:"VAR_NAME,required"`
+//
+// If a required flag is set, and the environment variable is empty, the
+// `default` tag is ignored.
 func parseFields(ref reflect.Value) error {
 	for i := 0; i < ref.NumField(); i++ {
 		var (
-			field     = ref.Field(i)
-			fieldKind = ref.Field(i).Kind()
-			fieldTags = ref.Type().Field(i).Tag
-			fieldName = ref.Type().Field(i).Name
+			field      = ref.Field(i)
+			fieldKind  = ref.Field(i).Kind()
+			fieldTags  = ref.Type().Field(i).Tag
+			fieldName  = ref.Type().Field(i).Name
+			envVarName string
+			required   bool
 		)
-
-		envVarName := fieldTags.Get("env")
-		if len(envVarName) == 0 || envVarName == "-" {
-			continue
-		}
 
 		if !field.CanSet() {
 			return fmt.Errorf("can't set field %v", fieldName)
 		}
 
+		tagVal := fieldTags.Get("env")
+		if tagVal == "" || tagVal == "-" {
+			continue
+		}
+
+		// The tag we're looking at will look something like one of these:
+		//
+		//     `env:"NAME"`
+		//     `env:"NAME,required"`
+		//
+		// Here we split on the comma and sort out the parts.
+		tagValParts := strings.Split(tagVal, ",")
+		if len(tagValParts) == 0 { // This should never happen
+			continue
+		} else if len(tagValParts) >= 1 {
+			envVarName = tagValParts[0]
+		}
+		if len(tagValParts) >= 2 && strings.TrimSpace(tagValParts[1]) == "required" {
+			required = true
+		}
+
+		// Get the value of the environment var
 		envVarVal := os.Getenv(envVarName)
+
+		// Return an error if the required flag is set and the env var is empty
+		if envVarVal == "" && required {
+			return fmt.Errorf("%s is required", envVarName)
+		}
+
 		defaultVal := fieldTags.Get("default")
 
 		// Is the situation such that we should set a default value? We only

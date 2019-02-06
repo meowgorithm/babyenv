@@ -182,3 +182,17 @@ func TestParsePointersWithDefaults(t *testing.T) {
 		t.Errorf("failed parsing *[]byte; expected %#v, got %#v", d, *cfg.D)
 	}
 }
+
+func TestRequiredFlag(t *testing.T) {
+	type config struct {
+		A bool `env:"A,required"`
+	}
+
+	os.Unsetenv("A")
+
+	var cfg config
+	if err := Parse(&cfg); err == nil {
+		t.Errorf("expected an error because of an unfulfilled 'require' flag")
+		return
+	}
+}
