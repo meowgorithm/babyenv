@@ -79,6 +79,38 @@ var (
 	ErrorNotAStructPointer = errors.New("expected a pointer to a struct")
 )
 
+// ErrorUnsettable is used when a field cannot be set
+type ErrorUnsettable struct {
+	FieldName string
+}
+
+// Error implements the error interface
+func (e *ErrorUnsettable) Error() string {
+	return fmt.Sprintf("can't set field %s", e.FieldName)
+}
+
+// ErrorUnsupportedType is used when we attempt to parse a struct field of an
+// unsupported type
+type ErrorUnsupportedType struct {
+	Type reflect.Type
+}
+
+// Error implements the error interface
+func (e *ErrorUnsupportedType) Error() string {
+	return fmt.Sprintf("unsupported type %v", e.Type)
+}
+
+// ErrorEnvVarRequired is used when a `required` flag is used and the value of
+// the corresponding environment variable is empty
+type ErrorEnvVarRequired struct {
+	Name string
+}
+
+// Error implements the error interface
+func (e *ErrorEnvVarRequired) Error() string {
+	return fmt.Sprintf("%s is required", e.Name)
+}
+
 // Parse parses a struct for environment variables, placing found values in the
 // struct, altering it. We look at the 'env' tag for the environment variable
 // names, and the 'default' for the default value to the corresponding
@@ -124,7 +156,7 @@ func parseFields(ref reflect.Value) error {
 		)
 
 		if !field.CanSet() {
-			return fmt.Errorf("can't set field %v", fieldName)
+			return &ErrorUnsettable{fieldName}
 		}
 
 		tagVal := fieldTags.Get("env")
@@ -153,7 +185,7 @@ func parseFields(ref reflect.Value) error {
 
 		// Return an error if the required flag is set and the env var is empty
 		if envVarVal == "" && required {
-			return fmt.Errorf("%s is required", envVarName)
+			return &ErrorEnvVarRequired{envVarName}
 		}
 
 		defaultVal := fieldTags.Get("default")
@@ -208,7 +240,7 @@ func parseFields(ref reflect.Value) error {
 				field.SetBytes([]byte(envVarVal))
 
 			default:
-				return fmt.Errorf("unsupported type %v", field.Type())
+				return &ErrorUnsupportedType{field.Type()}
 
 			}
 
@@ -263,17 +295,16 @@ func parseFields(ref reflect.Value) error {
 					field.Set(reflect.ValueOf(&byteSlice))
 
 				default:
-					fmt.Println("wowow")
-					return fmt.Errorf("unsupported type %v", field.Type())
+					return &ErrorUnsupportedType{field.Type()}
 
 				}
 
 			default:
-				return fmt.Errorf("unsupported type %v", field.Type())
+				return &ErrorUnsupportedType{field.Type()}
 			}
 
 		default:
-			return fmt.Errorf("unsupported type %v", field.Type())
+			return &ErrorUnsupportedType{field.Type()}
 		}
 
 	}
