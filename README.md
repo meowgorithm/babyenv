@@ -80,14 +80,14 @@ func main() {
 
 Currently, only the following types are supported:
 
-* string
-* bool
-* int
-* []byte
-* *string
-* *bool
-* *int
-* *[]byte
+* `string`
+* `bool`
+* `int`
+* `[]byte`
+* `*string`
+* `*bool`
+* `*int`
+* `*[]byte`
 
 Pull requests are welcome, especially for new types.
 
