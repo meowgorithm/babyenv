@@ -1,7 +1,7 @@
 Babyenv
 =======
 
-[![GoDoc Badge](https://godoc.org/github.com/magicnumbers/babylogger?status.svg)](http://godoc.org/github.com/magicnumbers/babyenv)
+[![GoDoc Badge](https://godoc.org/github.com/meowgorithm/babylogger?status.svg)](http://godoc.org/github.com/meowgorithm/babyenv)
 
 Package babyenv collects environment variables and places them in corresponding
 struct fields. It aims to reduce the boilerplate in reading data from the
@@ -45,7 +45,7 @@ package main
 import (
     "fmt"
     "os"
-    "github.com/magicnumbers/babyenv"
+    "github.com/meowgorithm/babyenv"
 )
 
 type config struct {
