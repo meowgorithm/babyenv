@@ -83,6 +83,7 @@ Currently, only the following types are supported:
 * `string`
 * `bool`
 * `int`
+* `int64`
 * `[]byte`
 * `*string`
 * `*bool`

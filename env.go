@@ -227,11 +227,22 @@ func parseFields(ref reflect.Value) error {
 				return err
 			}
 
+		case reflect.Int64:
+			if shouldSetDefault {
+				if err := setInt64(field, defaultVal); err != nil {
+					return err
+				}
+				continue
+			}
+			if err := setInt64(field, envVarVal); err != nil {
+				return err
+			}
+
 		// Slices are a whole can of worms
 		case reflect.Slice:
 			switch field.Type().Elem().Kind() {
 
-			// A reflect.Uint8 doubles as a byte array, apparently
+			// A reflect.Uint8 doubles as a byte array
 			case reflect.Uint8:
 				if shouldSetDefault {
 					field.SetBytes([]byte(defaultVal))
@@ -279,12 +290,23 @@ func parseFields(ref reflect.Value) error {
 					return err
 				}
 
+			case reflect.Int64:
+				if shouldSetDefault {
+					if err := setInt64Pointer(field, defaultVal); err != nil {
+						return err
+					}
+					continue
+				}
+				if err := setInt64Pointer(field, envVarVal); err != nil {
+					return err
+				}
+
 			// A poiner to a slice!! Whole other level
 			case reflect.Slice:
 
 				switch ptr.Elem().Kind() {
 
-				// Again, a uint8 seems to work as a byte array
+				// Again, a reflect.Uint8 also works as a byte array
 				case reflect.Uint8:
 					var byteSlice []byte
 					if shouldSetDefault {
@@ -342,6 +364,21 @@ func setInt(v reflect.Value, s string) error {
 	return nil
 }
 
+func setInt64(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		v.SetInt(0)
+		return nil
+	}
+
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
+	v.SetInt(n)
+	return nil
+}
+
 func setBoolPointer(v reflect.Value, s string) error {
 	if s == "" {
 		// Default to false
@@ -372,6 +409,23 @@ func setIntPointer(v reflect.Value, s string) error {
 		return err
 	}
 	i := int(i64)
+
+	v.Set(reflect.ValueOf(&i))
+	return nil
+}
+
+func setInt64Pointer(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		n := 0
+		v.Set(reflect.ValueOf(&n))
+		return nil
+	}
+
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
 
 	v.Set(reflect.ValueOf(&i))
 	return nil
