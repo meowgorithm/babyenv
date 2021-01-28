@@ -84,18 +84,19 @@ Currently, only the following types are supported:
 * `bool`
 * `int`
 * `int64`
-* `[]byte`
+* `[]byte`/`[]uint8`
 * `*string`
 * `*bool`
 * `*int`
-* `*[]byte`
+* `*int64`
+* `*[]byte`/`*[]uint8`
 
 Pull requests are welcome, especially for new types.
 
 
 ## Credit
 
-This is entirely based on the [caarlos0][carlos]’s [env][carlosenv] package.
+This is entirely based on [caarlos0][carlos]’s [env][carlosenv] package.
 This one simply has a slightly different interface, and less functionality.
 
 [carlos]: https://github.com/caarlos0

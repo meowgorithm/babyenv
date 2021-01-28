@@ -242,7 +242,7 @@ func parseFields(ref reflect.Value) error {
 		case reflect.Slice:
 			switch field.Type().Elem().Kind() {
 
-			// A reflect.Uint8 doubles as a byte array
+			// []uint8 is an alias for []byte
 			case reflect.Uint8:
 				if shouldSetDefault {
 					field.SetBytes([]byte(defaultVal))
@@ -306,7 +306,7 @@ func parseFields(ref reflect.Value) error {
 
 				switch ptr.Elem().Kind() {
 
-				// Again, a reflect.Uint8 also works as a byte array
+				// *[]uint8 is an alias for *[]byte
 				case reflect.Uint8:
 					var byteSlice []byte
 					if shouldSetDefault {
