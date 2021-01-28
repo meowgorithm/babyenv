@@ -215,6 +215,25 @@ func TestRequiredFlag(t *testing.T) {
 	var cfg config
 	if err := Parse(&cfg); err == nil {
 		t.Errorf("expected an error because of an unfulfilled 'require' flag")
-		return
+	}
+}
+
+func TestUnexportedFieldBehavior(t *testing.T) {
+	type a struct {
+		a bool
+	}
+
+	type b struct {
+		b bool `env:"b"`
+	}
+
+	var aEnv a
+	if err := Parse(&aEnv); err != nil {
+		t.Errorf("received an unexpected error while parsing a struct with an unexported field with no 'env' tag: %v", err)
+	}
+
+	var bEnv b
+	if err := Parse(&bEnv); err == nil {
+		t.Error("expected an error parsing a field with an 'env' tag on an unexported struct")
 	}
 }

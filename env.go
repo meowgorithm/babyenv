@@ -155,13 +155,13 @@ func parseFields(ref reflect.Value) error {
 			required   bool
 		)
 
-		if !field.CanSet() {
-			return &ErrorUnsettable{fieldName}
-		}
-
 		tagVal := fieldTags.Get("env")
 		if tagVal == "" || tagVal == "-" {
 			continue
+		}
+
+		if !field.CanSet() {
+			return &ErrorUnsettable{fieldName}
 		}
 
 		// The tag we're looking at will look something like one of these:
