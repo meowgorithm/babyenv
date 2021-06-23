@@ -237,3 +237,66 @@ func TestUnexportedFieldBehavior(t *testing.T) {
 		t.Error("expected an error parsing a field with an 'env' tag on an unexported struct")
 	}
 }
+
+func TestParseWithEmbeddedStruct(t *testing.T) {
+	type B struct {
+		C string `env:"C"`
+	}
+	type config struct {
+		A bool `env:"A"`
+		B
+	}
+
+	a := true
+	b := "xxx"
+	c := "c"
+
+	os.Setenv("A", strconv.FormatBool(a))
+	os.Setenv("B", b)
+	os.Setenv("C", c)
+
+	var cfg config
+	if err := Parse(&cfg); err != nil {
+		t.Errorf("error while parsing: %v", err)
+		return
+	}
+
+	if !cfg.A {
+		t.Errorf("failed parsing bool; expected %#v, got %#v", a, cfg.A)
+	}
+	if cfg.C != c {
+		t.Errorf("failed parsing embedded string; expected %#v, got %#v", c, cfg.C)
+	}
+}
+
+func TestParseWithEmbeddedPointerStruct(t *testing.T) {
+	type B struct {
+		C string `env:"C"`
+	}
+	type config struct {
+		A bool `env:"A"`
+		*B
+	}
+
+	a := true
+	b := "xxx"
+	c := "c"
+
+	os.Setenv("A", strconv.FormatBool(a))
+	os.Setenv("B", b)
+	os.Setenv("C", c)
+
+	cfg := config{B: &B{}}
+	if err := Parse(&cfg); err != nil {
+		t.Errorf("error while parsing: %v", err)
+		return
+	}
+
+	if !cfg.A {
+		t.Errorf("failed parsing bool; expected %#v, got %#v", a, cfg.A)
+	}
+	if cfg.C != c {
+		t.Errorf("failed parsing embedded string; expected %#v, got %#v", c, cfg.C)
+	}
+
+}

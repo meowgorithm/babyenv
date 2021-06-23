@@ -68,6 +68,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -77,6 +78,9 @@ var (
 	// struct but we didn't get it. This is returned when parsing a passed
 	// struct.
 	ErrorNotAStructPointer = errors.New("expected a pointer to a struct")
+
+	// exportedFieldRegex matches exported fields name
+	exportedFieldRegex = regexp.MustCompile("[A-Z].*")
 )
 
 // ErrorUnsettable is used when a field cannot be set
@@ -155,8 +159,13 @@ func parseFields(ref reflect.Value) error {
 			required   bool
 		)
 
+		// Support parsing embedded structs
+		isStruct := fieldKind == reflect.Struct || (fieldKind == reflect.Ptr && field.Type().Elem().Kind() == reflect.Struct)
+		isExported := exportedFieldRegex.MatchString(fieldName)
+		isEmbed := isStruct && isExported
+
 		tagVal := fieldTags.Get("env")
-		if tagVal == "" || tagVal == "-" {
+		if (tagVal == "" || tagVal == "-") && !isEmbed {
 			continue
 		}
 
@@ -171,7 +180,7 @@ func parseFields(ref reflect.Value) error {
 		//
 		// Here we split on the comma and sort out the parts.
 		tagValParts := strings.Split(tagVal, ",")
-		if len(tagValParts) == 0 { // This should never happen
+		if len(tagValParts) == 0 && !isEmbed { // This should never happen
 			continue
 		} else if len(tagValParts) >= 1 {
 			envVarName = tagValParts[0]
@@ -184,7 +193,7 @@ func parseFields(ref reflect.Value) error {
 		envVarVal := os.Getenv(envVarName)
 
 		// Return an error if the required flag is set and the env var is empty
-		if envVarVal == "" && required {
+		if envVarVal == "" && required && !isEmbed {
 			return &ErrorEnvVarRequired{envVarName}
 		}
 
@@ -255,6 +264,12 @@ func parseFields(ref reflect.Value) error {
 
 			}
 
+		case reflect.Struct:
+			err := parseFields(field)
+			if err != nil {
+				return err
+			}
+
 		// Pointers are also a whole other can of worms
 		case reflect.Ptr:
 			ptr := field.Type().Elem()
@@ -319,6 +334,15 @@ func parseFields(ref reflect.Value) error {
 				default:
 					return &ErrorUnsupportedType{field.Type()}
 
+				}
+
+			case reflect.Struct:
+				if field.Elem().Kind() == reflect.Invalid { // Skip invalid null pointers
+					continue
+				}
+				err := parseFields(field.Elem())
+				if err != nil {
+					return err
 				}
 
 			default:
