@@ -13,6 +13,8 @@ func TestParse(t *testing.T) {
 		C int    `env:"C"`
 		D []byte `env:"D"`
 		E int64  `env:"E"`
+		F uint   `env:"F"`
+		G uint64 `env:"G"`
 	}
 
 	a := true
@@ -20,12 +22,16 @@ func TestParse(t *testing.T) {
 	c := 16
 	d := []byte("yyy")
 	var e int64 = 64
+	var f uint = 32
+	var g uint64 = 64
 
 	os.Setenv("A", strconv.FormatBool(a))
 	os.Setenv("B", b)
 	os.Setenv("C", strconv.FormatInt(int64(c), 10))
 	os.Setenv("D", string(d))
 	os.Setenv("E", strconv.FormatInt(e, 10))
+	os.Setenv("F", strconv.FormatUint(uint64(f), 10))
+	os.Setenv("G", strconv.FormatUint(g, 10))
 
 	var cfg config
 	if err := Parse(&cfg); err != nil {
@@ -49,6 +55,12 @@ func TestParse(t *testing.T) {
 	}
 	if cfg.E != e {
 		t.Errorf("failed parsing int64; expected %#v, got %#v", c, cfg.E)
+	}
+	if cfg.F != f {
+		t.Errorf("failed parsing uint; expected %#v, got %#v", f, cfg.F)
+	}
+	if cfg.G != g {
+		t.Errorf("failed parsing uint64; expected %#v, got %#v", g, cfg.G)
 	}
 }
 
@@ -105,6 +117,8 @@ func TestParsePointers(t *testing.T) {
 		C *int    `env:"C"`
 		D *[]byte `env:"D"`
 		E *int64  `env:"E"`
+		F *uint   `env:"F"`
+		G *uint64 `env:"G"`
 	}
 
 	a := true
@@ -112,12 +126,16 @@ func TestParsePointers(t *testing.T) {
 	c := 16
 	d := []byte("yyy")
 	var e int64 = 64
+	var f uint = 32
+	var g uint64 = 64
 
 	os.Setenv("A", strconv.FormatBool(a))
 	os.Setenv("B", b)
 	os.Setenv("C", strconv.FormatInt(int64(c), 10))
 	os.Setenv("D", string(d))
 	os.Setenv("E", strconv.FormatInt(e, 10))
+	os.Setenv("F", strconv.FormatUint(uint64(f), 10))
+	os.Setenv("G", strconv.FormatUint(g, 10))
 
 	var cfg config
 	if err := Parse(&cfg); err != nil {
@@ -153,6 +171,18 @@ func TestParsePointers(t *testing.T) {
 		t.Errorf("failed parsing *int64; expected %#v, got nil", e)
 	} else if *cfg.E != e {
 		t.Errorf("failed parsing *int64; expected %#v, got %#v", e, *cfg.E)
+	}
+
+	if cfg.F == nil {
+		t.Errorf("failed parsing *uint; expected %#v, got nil", f)
+	} else if *cfg.F != f {
+		t.Errorf("failed parsing *uint; expected %#v, got %#v", f, *cfg.F)
+	}
+
+	if cfg.G == nil {
+		t.Errorf("failed parsing *uint64; expected %#v, got nil", g)
+	} else if *cfg.G != g {
+		t.Errorf("failed parsing *uint64; expected %#v, got %#v", g, *cfg.G)
 	}
 }
 
