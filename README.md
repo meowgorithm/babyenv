@@ -84,11 +84,15 @@ Currently, only the following types are supported:
 * `bool`
 * `int`
 * `int64`
+* `uint`
+* `uint64`
 * `[]byte`/`[]uint8`
 * `*string`
 * `*bool`
 * `*int`
 * `*int64`
+* `*uint`
+* `*uint64`
 * `*[]byte`/`*[]uint8`
 
 Pull requests are welcome, especially for new types.

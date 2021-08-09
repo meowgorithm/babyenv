@@ -238,6 +238,28 @@ func parseFields(ref reflect.Value) error {
 				return err
 			}
 
+		case reflect.Uint:
+			if shouldSetDefault {
+				if err := setUint(field, defaultVal); err != nil {
+					return err
+				}
+				continue
+			}
+			if err := setUint(field, envVarVal); err != nil {
+				return err
+			}
+
+		case reflect.Uint64:
+			if shouldSetDefault {
+				if err := setUint64(field, defaultVal); err != nil {
+					return err
+				}
+				continue
+			}
+			if err := setUint64(field, envVarVal); err != nil {
+				return err
+			}
+
 		// Slices are a whole can of worms
 		case reflect.Slice:
 			switch field.Type().Elem().Kind() {
@@ -298,6 +320,28 @@ func parseFields(ref reflect.Value) error {
 					continue
 				}
 				if err := setInt64Pointer(field, envVarVal); err != nil {
+					return err
+				}
+
+			case reflect.Uint:
+				if shouldSetDefault {
+					if err := setUintPointer(field, defaultVal); err != nil {
+						return err
+					}
+					continue
+				}
+				if err := setUintPointer(field, envVarVal); err != nil {
+					return err
+				}
+
+			case reflect.Uint64:
+				if shouldSetDefault {
+					if err := setUint64Pointer(field, defaultVal); err != nil {
+						return err
+					}
+					continue
+				}
+				if err := setUint64Pointer(field, envVarVal); err != nil {
 					return err
 				}
 
@@ -379,6 +423,36 @@ func setInt64(v reflect.Value, s string) error {
 	return nil
 }
 
+func setUint(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		v.SetUint(0)
+		return nil
+	}
+
+	n, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		return err
+	}
+	v.SetUint(n)
+	return nil
+}
+
+func setUint64(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		v.SetUint(0)
+		return nil
+	}
+
+	n, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return err
+	}
+	v.SetUint(n)
+	return nil
+}
+
 func setBoolPointer(v reflect.Value, s string) error {
 	if s == "" {
 		// Default to false
@@ -423,6 +497,41 @@ func setInt64Pointer(v reflect.Value, s string) error {
 	}
 
 	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	v.Set(reflect.ValueOf(&i))
+	return nil
+}
+
+func setUintPointer(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		n := 0
+		v.Set(reflect.ValueOf(&n))
+		return nil
+	}
+
+	i64, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		return err
+	}
+	i := uint(i64)
+
+	v.Set(reflect.ValueOf(&i))
+	return nil
+}
+
+func setUint64Pointer(v reflect.Value, s string) error {
+	if s == "" {
+		// Default to 0
+		n := 0
+		v.Set(reflect.ValueOf(&n))
+		return nil
+	}
+
+	i, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		return err
 	}
